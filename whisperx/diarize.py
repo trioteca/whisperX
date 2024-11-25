@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pyannote.audio import Pipeline
+from pyannote.audio import Pipeline, Inference
 from typing import Optional, Union
 import torch
 
@@ -17,6 +17,8 @@ class DiarizationPipeline:
         if isinstance(device, str):
             device = torch.device(device)
         self.model = Pipeline.from_pretrained(model_name, use_auth_token=use_auth_token).to(device)
+        self.embedding_model = Inference("pyannote/embedding", use_auth_token=use_auth_token)
+        self.device = device
 
     def __call__(self, audio: Union[str, np.ndarray], num_speakers=None, min_speakers=None, max_speakers=None):
         if isinstance(audio, str):
@@ -25,11 +27,27 @@ class DiarizationPipeline:
             'waveform': torch.from_numpy(audio[None, :]),
             'sample_rate': SAMPLE_RATE
         }
-        segments = self.model(audio_data, num_speakers = num_speakers, min_speakers=min_speakers, max_speakers=max_speakers)
+        segments = self.model(audio_data, num_speakers=num_speakers, min_speakers=min_speakers, max_speakers=max_speakers)
         diarize_df = pd.DataFrame(segments.itertracks(yield_label=True), columns=['segment', 'label', 'speaker'])
         diarize_df['start'] = diarize_df['segment'].apply(lambda x: x.start)
         diarize_df['end'] = diarize_df['segment'].apply(lambda x: x.end)
-        return diarize_df
+
+        embeddings = []
+        for _, row in diarize_df.iterrows():
+            segment = row['segment']
+            speaker = row['speaker']
+            embedding = self.embedding_model(audio_data['waveform'].numpy().squeeze(), segment)
+            embeddings.append({
+                "start": segment.start,
+                "end": segment.end,
+                "speaker": speaker,
+                "embedding": embedding
+            })
+
+        return {
+            "diarization": diarize_df,
+            "embeddings": embeddings
+        }
 
 
 def assign_word_speakers(diarize_df, transcript_result, fill_nearest=False):
