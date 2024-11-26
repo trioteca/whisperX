@@ -36,7 +36,7 @@ class DiarizationPipeline:
         for _, row in diarize_df.iterrows():
             segment = row['segment']
             speaker = row['speaker']
-            embedding = self.embedding_model(audio_data['waveform'].numpy().squeeze(), segment)
+            embedding = self.embedding_model(audio_data, segment)
             embeddings.append({
                 "start": segment.start,
                 "end": segment.end,
