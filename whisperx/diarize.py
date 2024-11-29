@@ -32,10 +32,18 @@ class DiarizationPipeline:
         diarize_df['start'] = diarize_df['segment'].apply(lambda x: x.start)
         diarize_df['end'] = diarize_df['segment'].apply(lambda x: x.end)
 
+        audio_duration = audio.shape[0] / SAMPLE_RATE
         embeddings = []
         for _, row in diarize_df.iterrows():
             segment = row['segment']
             speaker = row['speaker']
+            
+            if segment.start >= audio_duration:
+                continue
+            segment_end = min(segment.end, audio_duration)
+            if segment_end != segment.end:
+                segment = Segment(segment.start, segment_end)
+            
             embedding = self.embedding_model.crop(audio_data, segment)
             embeddings.append({
                 "start": segment.start,
