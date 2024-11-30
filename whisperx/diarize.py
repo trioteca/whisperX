@@ -44,13 +44,21 @@ class DiarizationPipeline:
             if segment_end != segment.end:
                 segment = Segment(segment.start, segment_end)
             
-            embedding = self.embedding_model.crop(audio_data, segment)
-            embeddings.append({
-                "start": segment.start,
-                "end": segment.end,
-                "speaker": speaker,
-                "embedding": embedding
-            })
+            try:
+                if isinstance(segment, Segment):
+                    embedding = self.embedding_model.crop(audio_data, [segment])
+                else:
+                    embedding = self.embedding_model.crop(audio_data, segment)
+
+                embeddings.append({
+                    "start": segment.start,
+                    "end": segment.end,
+                    "speaker": speaker,
+                    "embedding": embedding
+                })
+            except Exception as e:
+                print(f"Error al procesar el segmento {segment}: {e}")
+                continue
 
         return {
             "diarization": diarize_df,
