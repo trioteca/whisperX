@@ -63,7 +63,8 @@ from .diarize import Segment as SegmentX
 def load_vad_model(device, vad_onset=0.500, vad_offset=0.363, use_auth_token=None, model_fp=None):
     # Ruta absoluta al modelo local
     if model_fp is None:
-        model_fp = os.path.abspath(os.path.join("assets", "pytorch_model.bin"))
+        model_fp = os.path.abspath(os.path.join(os.getcwd(), "assets", "pytorch_model.bin"))
+
     
     # Logs para depuración
     print(f"=== Depuración: Información sobre el modelo ===")
