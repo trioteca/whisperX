@@ -61,37 +61,39 @@ from .diarize import Segment as SegmentX
 
 
 def load_vad_model(device, vad_onset=0.500, vad_offset=0.363, use_auth_token=None, model_fp=None):
-    # Ruta absoluta al modelo local
+
+    ASSETS_DIR = "/usr/local/lib/python3.10/dist-packages/whisperx/assets"
+    
     if model_fp is None:
-        model_fp = os.path.abspath(os.path.join(os.getcwd(), "assets", "pytorch_model.bin"))
+        model_fp = os.path.join(ASSETS_DIR, "pytorch_model.bin")
 
     
-    # Logs para depuración
+   
     print(f"=== Depuración: Información sobre el modelo ===")
     print(f"Buscando modelo en: {model_fp}")
     print(f"Archivo existe: {os.path.isfile(model_fp)}")
     print(f"Directorio de trabajo actual: {os.getcwd()}")
 
-    # Mostrar contenido del directorio assets
+    
     assets_dir = os.path.abspath("assets")
     if os.path.isdir(assets_dir):
         print(f"Contenido del directorio 'assets': {os.listdir(assets_dir)}")
     else:
         print(f"El directorio 'assets' no existe o no es accesible.")
 
-    # Manejo de error si el archivo no existe
+    
     if not os.path.isfile(model_fp):
         raise FileNotFoundError(
             f"El archivo del modelo no se encuentra en {model_fp}. "
             f"Asegúrate de que el modelo esté disponible localmente."
         )
     
-    # Cargar el modelo
+    
     print(f"Cargando modelo desde: {model_fp}")
     vad_model = Model.from_pretrained(model_fp, use_auth_token=use_auth_token)
     print("Modelo cargado con éxito.")
 
-    # Configuración de hiperparámetros
+    
     hyperparameters = {
         "onset": vad_onset,
         "offset": vad_offset,
@@ -100,7 +102,7 @@ def load_vad_model(device, vad_onset=0.500, vad_offset=0.363, use_auth_token=Non
     }
     print(f"Hiperparámetros: {hyperparameters}")
 
-    # Crear y configurar el pipeline
+    
     vad_pipeline = VoiceActivitySegmentation(segmentation=vad_model, device=torch.device(device))
     vad_pipeline.instantiate(hyperparameters)
     print("Pipeline de VAD creado y configurado con éxito.")
