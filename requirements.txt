@@ -1,7 +1,10 @@
-torch>=2
-torchaudio>=2.2
-faster-whisper==1.0.3
-transformers
-pandas
+ctranslate2>=4.5.0
+faster-whisper>=1.0.3
+nltk>=3.9.1
+numpy>=1.26.4
+pandas>=2.2.3
+huggingface-hub<1.0.0
+torch==2.4.1
+torchaudio==2.4.1
+transformers>=4.48.0
 setuptools>=65
-nltk
